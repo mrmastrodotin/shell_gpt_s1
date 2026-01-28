@@ -76,8 +76,8 @@ sgpt --interface web-automation "explain quantum computing"
 sgpt --repl web
 ```
 
-### 🧠 Auto-Context with Username
-Automatically includes system context (OS, network, tools) and username in prompts:
+### 🧠 Auto-Context
+Automatically includes system context (OS, network, tools) in prompts:
 
 ```shell
 # Build context (captures username from system)
