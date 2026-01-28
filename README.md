@@ -4,6 +4,26 @@ A command-line productivity tool powered by AI large language models (LLM). This
 https://github.com/TheR1D/shell_gpt/assets/16740832/9197283c-db6a-4b46-bfea-3eb776dd9093
 
 ## Installation
+
+### Kali Linux (One-Line Install)
+```bash
+curl -sSL https://raw.githubusercontent.com/mrmastrodotin/shell_gpt_s1/main/install_kali.sh | bash
+```
+
+Or manually:
+```bash
+# Install pipx
+sudo apt update && sudo apt install pipx -y
+pipx ensurepath
+
+# Install shell_gpt_s1
+pipx install git+https://github.com/mrmastrodotin/shell_gpt_s1.git
+
+# Install Playwright (for web automation)
+~/.local/pipx/venvs/shell-gpt/bin/playwright install --with-deps chromium
+```
+
+### Other Systems
 ```shell
 pip install shell-gpt
 ```
