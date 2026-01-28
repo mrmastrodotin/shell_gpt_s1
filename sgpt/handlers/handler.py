@@ -12,9 +12,16 @@ completion: Callable[..., Any] = lambda *args, **kwargs: Generator[Any, None, No
 
 base_url = cfg.get("API_BASE_URL")
 use_litellm = cfg.get("USE_LITELLM") == "true"
+
+# Try to get OpenAI API key, but don't fail if it's missing (user might use Ollama/Gemini)
+try:
+    openai_api_key = cfg.get("OPENAI_API_KEY")
+except:
+    openai_api_key = "dummy_key"  # Placeholder for non-OpenAI interfaces
+
 additional_kwargs = {
     "timeout": int(cfg.get("REQUEST_TIMEOUT")),
-    "api_key": cfg.get("OPENAI_API_KEY"),
+    "api_key": openai_api_key,
     "base_url": None if base_url == "default" else base_url,
 }
 
