@@ -34,6 +34,63 @@ By default, ShellGPT uses OpenAI's API and GPT-4 model. You'll need an API key, 
 >
 > **❗️Note that ShellGPT is not optimized for local models and may not work as expected.**
 
+## 🚀 Quick Start
+
+### For Kali Linux Users (Connecting to Ollama on Windows Host)
+
+After installation, configure Ollama connection:
+
+```bash
+# 1. Configure Ollama host (Windows host via NAT)
+sgpt --ollama-host
+# When prompted, enter: http://10.0.2.2:11434
+# (For Bridge mode, use: http://<WINDOWS_IP>:11434)
+
+# 2. Select Ollama model
+sgpt --ollama-model
+
+# 3. Switch to Ollama interface
+sgpt --interface ollama
+
+# 4. Test it
+sgpt "hello world"
+```
+
+### Setting Up API Keys
+
+```bash
+# Interactive API key configuration (OpenAI or Gemini)
+sgpt --set-keys
+
+# Verify keys are configured and valid
+sgpt --show-keys
+```
+
+### Basic Usage Examples
+
+```bash
+# Simple query
+sgpt "What is machine learning?"
+
+# Check current interface
+sgpt --status
+
+# Build auto-context (includes username)
+sgpt --build-context
+
+# Switch between interfaces
+sgpt --interfaces
+
+# Web automation mode (no API needed)
+sgpt --interface web-automation "explain quantum computing"
+```
+
+### Uninstall
+
+```bash
+curl -sSL https://raw.githubusercontent.com/mrmastrodotin/shell_gpt_s1/main/uninstall_kali.sh | bash
+```
+
 ## 🆕 New Features
 
 ### 🔑 Enhanced API Key Management
