@@ -40,21 +40,62 @@ By default, ShellGPT uses OpenAI's API and GPT-4 model. You'll need an API key, 
 
 After installation, configure Ollama connection:
 
-```bash
-# 1. Configure Ollama host (Windows host via NAT)
-sgpt --ollama-host
-# When prompted, enter: http://10.0.2.2:11434
-# (For Bridge mode, use: http://<WINDOWS_IP>:11434)
+#### Step 1: Configure Ollama on Windows Host
 
-# 2. Select Ollama model
+First, make Ollama accessible from the VM:
+
+```powershell
+# On Windows PowerShell - Configure Ollama to listen on all interfaces
+$env:OLLAMA_HOST="0.0.0.0:11434"
+ollama serve
+```
+
+#### Step 2: Find Your Network Configuration
+
+Check your Windows IP configuration:
+```powershell
+ipconfig
+```
+
+Look for:
+- **VMware NAT (VMnet8)**: e.g., `192.168.154.1` (Recommended)
+- **VirtualBox NAT**: Use `10.0.2.2`
+- **Bridge Mode**: Your Windows Wi-Fi/Ethernet IP
+
+#### Step 3: Configure sgpt in Kali Linux
+
+```bash
+# 1. Configure Ollama host
+sgpt --ollama-host
+
+# Enter one of:
+# - For VMware NAT: http://192.168.154.1:11434
+# - For VirtualBox NAT: http://10.0.2.2:11434
+# - For Bridge Mode: http://<YOUR_WINDOWS_IP>:11434
+
+# 2. Verify connection (optional)
+curl http://192.168.154.1:11434/api/tags
+
+# 3. Select Ollama model
 sgpt --ollama-model
 
-# 3. Switch to Ollama interface
+# 4. Switch to Ollama interface
 sgpt --interface ollama
 
-# 4. Test it
+# 5. Test it
 sgpt "hello world"
 ```
+
+#### Troubleshooting
+
+**Connection refused?**
+- Check Windows Firewall: Allow port 11434
+- Verify Ollama is running: `ollama list` on Windows
+- Test from Kali: `curl http://<HOST_IP>:11434/api/tags`
+
+**Wrong IP?**
+- Run `ipconfig` on Windows
+- Look for VMnet8 (VMware) or your Wi-Fi adapter IP
 
 ### Setting Up API Keys
 
