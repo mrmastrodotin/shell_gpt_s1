@@ -14,6 +14,84 @@ By default, ShellGPT uses OpenAI's API and GPT-4 model. You'll need an API key, 
 >
 > **❗️Note that ShellGPT is not optimized for local models and may not work as expected.**
 
+## 🆕 New Features
+
+### 🔑 Enhanced API Key Management
+Secure storage and management of API keys using Windows Credential Manager or system keyring:
+
+```shell
+# Set API keys interactively (OpenAI or Gemini)
+sgpt --set-keys
+
+# Check which keys are configured and validate them
+sgpt --show-keys
+
+# Clear specific API keys or all keys
+sgpt --clear-keys
+```
+
+### 🎯 Simplified Model Configuration
+Configure models with simple flag-based commands (no arguments needed):
+
+```shell
+# Interactive Gemini model selection
+sgpt --gemini-model
+
+# Interactive OpenAI model selection
+sgpt --openai-model
+
+# Interactive Ollama model/host configuration
+sgpt --ollama-model
+sgpt --ollama-host
+```
+
+### 🌐 Multi-Interface Support
+Seamlessly switch between different AI providers:
+
+```shell
+# Interactive interface selector
+sgpt --interfaces
+
+# Switch to specific interface
+sgpt --interface gemini      # Gemini API
+sgpt --interface openai      # OpenAI API
+sgpt --interface ollama      # Local Ollama models
+sgpt --interface web-automation  # Browser-based AI (ChatGPT/Gemini/Claude)
+
+# Check current interface and model
+sgpt --status
+```
+
+### 🤖 Web Automation Mode
+Interact with AI through browser automation (bypasses API requirements):
+
+```shell
+# Configure web provider
+sgpt --web-model
+
+# One-off prompt
+sgpt --interface web-automation "explain quantum computing"
+
+# Interactive REPL session
+sgpt --repl web
+```
+
+### 🧠 Auto-Context with Username
+Automatically includes system context (OS, network, tools) and username in prompts:
+
+```shell
+# Build context (captures username from system)
+sgpt --build-context
+
+# View current context
+sgpt --show-context
+
+# Clear context cache
+sgpt --clear-context
+```
+
+Once built, context is automatically injected into all prompts, allowing the AI to address you by name!
+
 ## Usage
 **ShellGPT** is designed to quickly analyse and retrieve information. It's useful for straightforward requests ranging from technical configurations to general knowledge.
 ```shell
