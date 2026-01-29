@@ -1,0 +1,84 @@
+# ShellGPT Configuration File
+# This file controls the behavior of the ShellGPT agent
+
+# LLM Configuration
+llm:
+  # LLM interface: openai, gemini, ollama, web
+  interface: openai
+  
+  # Model name (leave null for provider default)
+  model: null
+  
+  # Temperature (0.0 = deterministic, 1.0 = creative)
+  temperature: 0.7
+  
+  # Maximum tokens to generate
+  max_tokens: 2000
+  
+  # Retry attempts for failed LLM calls
+  retry_attempts: 3
+  
+  # Delay between retries (seconds)
+  retry_delay: 2.0
+
+# Execution Configuration
+execution:
+  # Command timeout (seconds)
+  timeout: 300
+  
+  # Maximum pending executions
+  max_pending: 10
+  
+  # Auto-cleanup old executions
+  auto_cleanup: true
+
+# Logging Configuration
+logging:
+  # Console log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  console_level: INFO
+  
+  # File log level
+  file_level: DEBUG
+  
+  # Enable log rotation
+  enable_rotation: true
+  
+  # Max log file size (MB)
+  max_file_size_mb: 10
+  
+  # Number of backup log files to keep
+  backup_count: 7
+
+# Safety Configuration
+safety:
+  # Require human approval for all commands
+  require_approval: true
+  
+  # Enable command safety validation
+  enable_validation: true
+  
+  # Allowed network ranges (CIDR notation)
+  # Example: ['192.168.1.0/24', '10.0.0.0/8']
+  allowed_networks: []
+  
+  # Additional blocked command patterns
+  blocked_commands: []
+
+# Storage Configuration
+storage:
+  # Session storage directory
+  sessions_dir: ~/.sgpt/agent_sessions
+  
+  # Logs directory
+  logs_dir: ~/.sgpt/logs
+  
+  # Reports directory
+  reports_dir: ~/.sgpt/reports
+
+# Environment Variable Overrides:
+# SGPT_LLM_INTERFACE       - Override LLM interface
+# SGPT_LLM_MODEL          - Override model name
+# SGPT_LLM_TEMPERATURE    - Override temperature
+# SGPT_LOG_LEVEL          - Override console log level
+# SGPT_REQUIRE_APPROVAL   - Override approval requirement (true/false)
+# SGPT_STORAGE_DIR        - Override base storage directory

@@ -1,0 +1,971 @@
+Got it. You want **full agent automation in thinking + planning + suggesting**, with **human approval as the only gate before execution** — exactly like modern **AI coding agents**, but applied to **red-team workflows**.
+
+Below is a **clean, realistic, engineering-grade design** that stays powerful *and* safe.
+
+---
+
+# ShellGPT v2 — Fully Automated Reasoning Agent (HIL-Gated Execution)
+
+## Core Idea (lock this in)
+
+> **The agent does everything except execution.
+> Humans only approve or reject.**
+
+So the loop becomes:
+
+```
+Observe → Think → Plan → Suggest → WAIT (Human) → Observe → …
+```
+
+No more “ask the user what to do next”.
+The agent **decides**. The human **authorizes**.
+
+---
+
+## 1️⃣ What “Full Automation” Actually Means (important)
+
+Full automation does **NOT** mean:
+
+* running commands automatically
+* background attacks
+* silent escalation
+
+It **DOES** mean:
+
+* automatic goal decomposition
+* automatic phase transitions
+* automatic tool/flag selection
+* automatic pivoting on failures
+* automatic deduplication
+* automatic next-step selection
+
+Execution remains **explicitly approved**.
+
+This is exactly how **Cursor / Devin / SWE-Agent** work.
+
+---
+
+## 2️⃣ Agent Responsibilities (Expanded)
+
+Your v2 agent now owns:
+
+### 🧠 Reasoning
+
+* Understands the goal
+* Maintains internal state
+* Decides what *should* happen next
+
+### 🗺️ Planning
+
+* Breaks goal into steps
+* Chooses correct phase
+* Orders actions logically
+
+### 🛠️ Suggestion
+
+* Generates exact commands
+* Chooses flags
+* Selects targets automatically
+
+### 🔁 Adaptation
+
+* Reads command results
+* Updates facts
+* Changes strategy if needed
+
+### 🧍‍♂️ Human Role
+
+* Approve / Reject / Edit
+* Stop agent
+* Change goal (optional)
+
+---
+
+## 3️⃣ New Agent Loop (Authoritative)
+
+```
+┌────────────┐
+│  Observe   │ ← command results, context, failures
+└─────┬──────┘
+      ↓
+┌────────────┐
+│  Think     │ ← LLM reasoning (hidden)
+└─────┬──────┘
+      ↓
+┌────────────┐
+│  Plan      │ ← choose next objective
+└─────┬──────┘
+      ↓
+┌────────────┐
+│  Suggest   │ ← exact command(s)
+└─────┬──────┘
+      ↓
+┌────────────┐
+│  HIL Gate  │ ← approve / edit / reject
+└─────┬──────┘
+      ↓
+┌────────────┐
+│  Execute   │ ← human runs `sgpt run`
+└─────┬──────┘
+      ↓
+     loop
+```
+
+This loop **never asks the user what to do next**.
+
+---
+
+## 4️⃣ Agent State (More Powerful, Still Safe)
+
+```python
+AgentState = {
+  "goal": "Enumerate hosts and services on local network",
+  "phase": "recon",
+  "context": AutoContext,
+  "facts": {
+    "subnet": "192.168.0.0/24",
+    "hosts": [],
+    "services": {}
+  },
+  "history": {
+    "commands_run": [],
+    "failures": []
+  },
+  "current_plan": None,
+  "proposed_command": None,
+  "waiting_for_approval": True,
+  "done": False
+}
+```
+
+Key point:
+
+* **facts drive decisions**, not chat text
+
+---
+
+## 5️⃣ Fully Automated Planning Logic
+
+### Example reasoning (internal, not printed)
+
+> Goal not satisfied
+> No hosts known
+> Subnet detected
+> Recon phase active
+> → Host discovery required
+
+The agent **does this automatically**.
+
+---
+
+## 6️⃣ Suggestion Engine (Command Generator)
+
+This uses:
+
+* auto-context (OS, tools, IPs)
+* phase rules
+* prior results
+
+### Example outputs
+
+**Recon**
+
+```bash
+nmap -sn 192.168.0.0/24
+```
+
+**Enumeration**
+
+```bash
+nmap -sS -p- 192.168.0.12
+```
+
+**Service enum**
+
+```bash
+nmap -sV -p 22,80 192.168.0.12
+```
+
+The agent:
+
+* picks flags
+* picks targets
+* avoids repetition
+* escalates gradually
+
+---
+
+## 7️⃣ Human-in-the-Loop (Execution Gate Only)
+
+CLI UX becomes:
+
+```text
+[Agent | phase: recon]
+
+Proposed command:
+nmap -sn 192.168.0.0/24
+
+Reason:
+No live hosts discovered yet.
+
+Approve?
+[y] run
+[e] edit
+[n] skip
+[q] stop agent
+```
+
+No questions like:
+
+> “What would you like to do?”
+
+The agent already decided.
+
+---
+
+## 8️⃣ Observation → Adaptation (Critical)
+
+After execution:
+
+```bash
+sgpt run nmap -sn 192.168.0.0/24
+```
+
+Agent automatically:
+
+* summarizes output
+* extracts facts
+* updates state
+* decides next step
+
+Example:
+
+```json
+hosts = ["192.168.0.12", "192.168.0.20"]
+phase = "enumeration"
+```
+
+Next proposal appears immediately.
+
+---
+
+## 9️⃣ Failure Handling (Automated)
+
+If a command fails:
+
+* Agent logs failure
+* Chooses alternative
+* Explains briefly
+
+Example:
+
+```text
+Previous scan failed (host unreachable).
+Proposing ARP-based discovery instead.
+```
+
+Command:
+
+```bash
+arp-scan --localnet
+```
+
+No user intervention required.
+
+---
+
+## 🔟 Safety Boundaries (Hard Rules)
+
+These are enforced **outside the LLM**.
+
+| Rule                    | Enforcement   |
+| ----------------------- | ------------- |
+| No auto execution       | CLI gate      |
+| No repeat scans         | State check   |
+| No phase skipping       | Planner       |
+| No destructive commands | Allowlist     |
+| No privilege escalation | Context check |
+
+LLM cannot override these.
+
+---
+
+## 11️⃣ CLI Commands (Agent Mode)
+
+### Start agent
+
+```bash
+sgpt agent start --goal "enumerate local network"
+```
+
+### Pause / resume
+
+```bash
+sgpt agent pause
+sgpt agent resume
+```
+
+### Stop
+
+```bash
+sgpt agent stop
+```
+
+### Inspect state
+
+```bash
+sgpt agent status
+```
+
+---
+
+## 12️⃣ Why This Matches AI Coding Agents
+
+| Coding Agents   | ShellGPT v2      |
+| --------------- | ---------------- |
+| Auto plan       | ✅                |
+| Auto next step  | ✅                |
+| Suggest diffs   | Suggest commands |
+| Human approve   | Human approve    |
+| Observe results | Observe output   |
+| Iterate         | Iterate          |
+
+Same pattern. Different domain.
+
+---
+
+## 13️⃣ What This Makes ShellGPT v2
+
+Not a chatbot
+Not an exploit bot
+
+But:
+
+> **A fully automated reasoning agent for red teaming, with human-approved execution.**
+
+That’s the **right** level of power.
+
+---
+
+## Final One-Line Summary
+
+> **ShellGPT v2 becomes a fully automated red-team reasoning agent that plans, adapts, and suggests every step end-to-end, while humans only approve execution—exactly like modern AI coding agents.**
+
+-------
+
+
+
+# ShellGPT v2 — Tools Architecture
+
+## Core Principle (lock this in)
+
+> **Tools are capabilities, not actions.
+> The agent *selects* tools, *proposes* commands, humans *execute*.**
+
+So tools:
+
+* ❌ never auto-run
+* ❌ never self-invoke
+* ✅ expose metadata
+* ✅ enable correct suggestions
+* ✅ enforce safety boundaries
+
+---
+
+## 1️⃣ Tool Layers (Very Important)
+
+Tools are **not one thing**. You need **three layers**:
+
+```
+┌──────────────────────────┐
+│  Agent Planner (LLM)     │  ← decides WHAT is needed
+└───────────▲──────────────┘
+            │
+┌───────────┴──────────────┐
+│  Tool Registry           │  ← knows WHAT EXISTS
+└───────────▲──────────────┘
+            │
+┌───────────┴──────────────┐
+│  Tool Execution Surface  │  ← sgpt run (human)
+└──────────────────────────┘
+```
+
+This separation is **non-negotiable**.
+
+---
+
+## 2️⃣ Tool Registry (Central Brain)
+
+### Purpose
+
+* Declare what tools exist
+* Describe what they do
+* Define when they are allowed
+* Prevent unsafe usage
+
+### Tool Registry = **static + detected**
+
+---
+
+## 3️⃣ Tool Definition Schema (Critical)
+
+Every tool must be described **before** it can be suggested.
+
+```python
+@dataclass
+class ToolSpec:
+    name: str
+    binary: str
+    category: str
+    phases: list[str]
+    requires_root: bool
+    destructive: bool
+    network_active: bool
+    description: str
+    safe_flags: list[str]
+```
+
+---
+
+### Example: `nmap`
+
+```python
+ToolSpec(
+    name="nmap",
+    binary="nmap",
+    category="network_scanner",
+    phases=["recon", "enumeration"],
+    requires_root=True,
+    destructive=False,
+    network_active=True,
+    description="Network discovery and port scanning",
+    safe_flags=["-sn", "-sS", "-sV", "-p-", "--top-ports"]
+)
+```
+
+---
+
+## 4️⃣ Tool Availability Detection (Auto-Context Integration)
+
+The **Context Builder** populates availability:
+
+```json
+{
+  "tools": {
+    "nmap": true,
+    "arp-scan": false,
+    "masscan": true
+  }
+}
+```
+
+The **Agent CANNOT propose a tool that is unavailable**.
+
+This check happens **outside the LLM**.
+
+---
+
+## 5️⃣ Tool Categories (Agent Reasoning Aid)
+
+Tools are grouped semantically:
+
+| Category          | Examples            |
+| ----------------- | ------------------- |
+| discovery         | nmap, arp-scan      |
+| enumeration       | nmap, enum4linux    |
+| web               | nikto, gobuster     |
+| exploitation      | metasploit (future) |
+| post-exploitation | linpeas (future)    |
+
+This allows the agent to reason like:
+
+> “I am in recon → I need discovery tools”
+
+---
+
+## 6️⃣ Tool Selection Logic (Automated)
+
+The agent selects tools based on:
+
+1. **Current phase**
+2. **Goal**
+3. **Known facts**
+4. **Availability**
+5. **Safety constraints**
+
+### Example reasoning (internal):
+
+```
+Phase = recon
+Subnet known
+Hosts unknown
+nmap available
+→ select nmap with discovery flags
+```
+
+No user input required.
+
+---
+
+## 7️⃣ Command Generator (Tool → Command)
+
+Tools **do not contain commands**.
+They contain **rules for command generation**.
+
+### Example (nmap generator)
+
+```python
+def generate_nmap_command(context, intent):
+    if intent == "host_discovery":
+        return f"nmap -sn {context.network.subnet}"
+
+    if intent == "full_port_scan":
+        return f"nmap -sS -p- {context.target}"
+```
+
+This logic:
+
+* is deterministic
+* is auditable
+* prevents wrong flags
+
+---
+
+## 8️⃣ Safety Gate (Hard Enforcement)
+
+Before proposing a command:
+
+### Static checks (non-LLM)
+
+* Tool allowed in this phase?
+* Tool available?
+* Requires root? (do we have it?)
+* Destructive? (blocked by default)
+* Duplicate of previous command?
+
+If **any check fails → command rejected**.
+
+LLM cannot override this.
+
+---
+
+## 9️⃣ Human-in-the-Loop Execution Surface
+
+Only **one execution path exists**:
+
+```bash
+sgpt run <command>
+```
+
+This ensures:
+
+* explicit consent
+* audit trail
+* reproducibility
+
+The agent **waits** until observation is recorded.
+
+---
+
+## 🔁 10️⃣ Tool Observation & Feedback
+
+After execution:
+
+* Output summarized
+* Facts extracted
+* Tool effectiveness recorded
+
+```json
+{
+  "tool": "nmap",
+  "result": "success",
+  "facts": {
+    "hosts": ["192.168.0.12"]
+  }
+}
+```
+
+The agent adapts automatically.
+
+---
+
+## 11️⃣ Tool Escalation Rules (Automated)
+
+The agent escalates **only when justified**:
+
+```
+-sn  → -sS  → -sV  → targeted scripts
+```
+
+Rules:
+
+* No jumping to aggressive scans
+* No repetition
+* Each escalation must add value
+
+This mirrors **real red-team discipline**.
+
+---
+
+## 12️⃣ Adding a New Tool (Developer UX)
+
+To add a tool:
+
+1. Define `ToolSpec`
+2. Add generator function
+3. Register in Tool Registry
+
+No changes to:
+
+* planner
+* agent loop
+* HIL logic
+
+This is **extensible by design**.
+
+---
+
+## 13️⃣ Why This Architecture Works
+
+✔ Prevents unsafe commands
+✔ Keeps agent deterministic
+✔ Allows full automation in planning
+✔ Maintains human control
+✔ Easy to audit & debug
+✔ Mirrors AI coding agents’ tool usage
+
+---
+
+## One-Line Summary (lock this)
+
+> **ShellGPT v2 tools architecture treats tools as declarative capabilities registered with safety metadata; the agent automatically selects and generates commands from them, while humans remain the sole execution authority.**
+
+------------
+
+
+Below is a **clear, end-to-end architecture for ShellGPT v2**, focused exactly on what you asked:
+
+* **Graph**
+* **Context**
+* **LLM**
+* **How they interact**
+
+This is the **agent architecture**, not CLI-level noise.
+
+---
+
+# ShellGPT v2 Architecture
+
+*(Fully automated reasoning + human-approved execution)*
+
+---
+
+## 1️⃣ High-Level v2 Architecture
+
+ShellGPT v2 introduces an **Agent Layer** on top of v1.
+
+```
+┌──────────────────────────────────────────┐
+│              CLI / UX                    │
+│  sgpt agent start / approve / status     │
+└───────────────┬──────────────────────────┘
+                ↓
+┌──────────────────────────────────────────┐
+│            AGENT CORE (v2)                │
+│  Graph • Planner • State • HIL Gate       │
+└───────────────┬──────────────────────────┘
+                ↓
+┌──────────────────────────────────────────┐
+│        CONTEXT ENGINE (shared)            │
+│  Auto-Context • Session Memory • Tools    │
+└───────────────┬──────────────────────────┘
+                ↓
+┌──────────────────────────────────────────┐
+│        LLM ABSTRACTION LAYER              │
+│  OpenAI • Gemini • Ollama • Web           │
+└───────────────┬──────────────────────────┘
+                ↓
+┌──────────────────────────────────────────┐
+│        EXECUTION SURFACE (v1)             │
+│     sgpt run  (human executes)            │
+└──────────────────────────────────────────┘
+```
+
+Key rule:
+
+> **LLM never executes. Agent never executes. Human executes.**
+
+---
+
+## 2️⃣ Graph Architecture (v2 Brain)
+
+### What the Graph Is
+
+* A **state machine**
+* Long-running
+* Deterministic
+* Interruptible
+
+Implemented with **LangGraph** or equivalent.
+
+---
+
+### Minimal Graph (MVP)
+
+```
+[Observe] → [Think] → [Plan] → [Propose] → [HIL] → [Observe]
+```
+
+This loop continues **until the goal is satisfied or stopped**.
+
+---
+
+### Graph Nodes (Precise Responsibilities)
+
+#### 1. Observe Node
+
+**Input**
+
+* Auto-context
+* Session command results
+* Known facts
+
+**Output**
+
+* Updated AgentState
+
+No LLM required here.
+
+---
+
+#### 2. Think Node (LLM – internal reasoning)
+
+**Purpose**
+
+* Analyze progress
+* Detect failures
+* Decide whether to pivot or continue
+
+**Output**
+
+```json
+{
+  "status": "incomplete",
+  "next_intent": "host_discovery"
+}
+```
+
+This reasoning is **hidden**, never printed.
+
+---
+
+#### 3. Plan Node (LLM – structured)
+
+**Purpose**
+
+* Decide *what should happen next*
+
+**Output**
+
+```json
+{
+  "phase": "recon",
+  "objective": "discover live hosts"
+}
+```
+
+No commands yet.
+
+---
+
+#### 4. Propose Node (LLM – constrained)
+
+**Purpose**
+
+* Generate **exact command(s)** using tools architecture
+
+**Output**
+
+```bash
+nmap -sn 192.168.0.0/24
+```
+
+LLM is heavily constrained by:
+
+* context
+* tools registry
+* behavior rules
+
+---
+
+#### 5. HIL Gate Node (non-LLM)
+
+**Purpose**
+
+* Wait for human decision
+
+Options:
+
+* approve
+* edit
+* reject
+* stop agent
+
+Graph **halts here** until input.
+
+---
+
+## 3️⃣ Context Architecture (v2)
+
+Context in v2 is **structured state**, not text blobs.
+
+---
+
+### Context Layers
+
+```
+┌──────────────────────────┐
+│ Auto-Context             │ ← OS, network, tools
+├──────────────────────────┤
+│ Session Memory           │ ← commands + summaries
+├──────────────────────────┤
+│ Known Facts              │ ← hosts, services, creds
+├──────────────────────────┤
+│ Runtime Context          │ ← phase, interface
+├──────────────────────────┤
+│ Behavior Rules           │ ← verbosity, safety
+└──────────────────────────┘
+```
+
+All layers merge into **AgentState**.
+
+---
+
+### AgentState (Authoritative)
+
+```python
+AgentState = {
+  "goal": "Enumerate local network",
+  "phase": "recon",
+  "auto_context": {...},
+  "tools": {...},
+  "facts": {
+    "subnet": "192.168.0.0/24",
+    "hosts": [],
+    "services": {}
+  },
+  "history": {
+    "commands": [],
+    "failures": []
+  },
+  "proposed_command": None,
+  "waiting_for_approval": True,
+  "done": False
+}
+```
+
+No prompt history.
+No hallucinated memory.
+
+---
+
+## 4️⃣ LLM Architecture (v2)
+
+### LLM Roles Are Split (Critical)
+
+You do **NOT** use one LLM call for everything.
+
+---
+
+### LLM Call Types
+
+| LLM Call  | Purpose                | Output     |
+| --------- | ---------------------- | ---------- |
+| Think     | Hidden reasoning       | JSON       |
+| Plan      | Decide next objective  | JSON       |
+| Propose   | Generate command       | Plain text |
+| Summarize | Command output → facts | Short text |
+
+Each call:
+
+* has a different system prompt
+* has different constraints
+* cannot override safety
+
+---
+
+### LLM Never Sees:
+
+* Raw execution permission
+* Shell access
+* Ability to loop itself
+
+---
+
+## 5️⃣ Tool Architecture Interaction (v2)
+
+LLM **does not know tools directly**.
+
+Instead:
+
+* Tools are **registered declaratively**
+* Tool registry filters options
+* LLM chooses *intent*, not binary
+
+Flow:
+
+```
+LLM intent → Tool Registry → Command Generator → Proposal
+```
+
+This prevents:
+
+* wrong flags
+* unsafe tools
+* hallucinated binaries
+
+---
+
+## 6️⃣ Execution Model (Hard Boundary)
+
+Execution is **outside the graph**.
+
+```
+Agent proposes → Human approves → Human runs sgpt run → Agent observes
+```
+
+This is what keeps v2:
+
+* safe
+* auditable
+* professional
+
+---
+
+## 7️⃣ Comparison: v1 vs v2 (Clear)
+
+| Aspect       | v1           | v2                     |
+| ------------ | ------------ | ---------------------- |
+| Control flow | Linear       | Graph-based            |
+| State        | Prompt text  | Structured AgentState  |
+| Planning     | None         | Automatic              |
+| Memory       | Chat history | Facts + summaries      |
+| Tool usage   | Suggested    | Selected + constrained |
+| Execution    | User         | User (gated)           |
+| Automation   | Low          | High                   |
+| Safety       | Implicit     | Enforced               |
+
+---
+
+## 8️⃣ What v2 IS (Accurate)
+
+ShellGPT v2 is:
+
+> **A goal-driven, stateful, human-supervised automation agent that reasons continuously, suggests next actions autonomously, and never executes without approval.**
+
+---
+
+## One-Line Summary
+
+> **ShellGPT v2 replaces v1’s linear prompt flow with a graph-driven agent core that uses structured context as state, LLMs for reasoning and planning, and a human-in-the-loop execution gate to deliver full automation without loss of control.**
+
