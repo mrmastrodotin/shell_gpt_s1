@@ -61,3 +61,10 @@ c:/
 test_output*.txt
 coverage.xml
 .coverage
+
+# User requested ignores
+USAGE.md
+v2 plan.txt
+*.zip
+
+shell_gpt_s1.zip
