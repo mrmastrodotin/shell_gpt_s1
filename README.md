@@ -5,7 +5,7 @@ https://github.com/TheR1D/shell_gpt/assets/16740832/9197283c-db6a-4b46-bfea-3eb7
 
 ## Installation
 ```shell
-pip install shell-gpt
+pip install git+https://github.com/mrmastrodotin/shell_gpt_s1.git
 ```
 By default, ShellGPT uses OpenAI's API and GPT-4 model. You'll need an API key, you can generate one [here](https://beta.openai.com/account/api-keys). You will be prompted for your key which will then be stored in `~/.config/shell_gpt/.sgptrc`. OpenAI API is not free of charge, please refer to the [OpenAI pricing](https://openai.com/pricing) for more information.
 
