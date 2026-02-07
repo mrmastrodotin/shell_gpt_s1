@@ -30,10 +30,18 @@ if [ -f "$PLAYWRIGHT_BIN" ]; then
     # Try installing with dependencies first
     echo -e "${BLUE}Attempting to install browser dependencies...${NC}"
     if ! "$PLAYWRIGHT_BIN" install --with-deps chromium; then
-        echo -e "${BLUE}Dependency installation failed (common on Kali/Parrot).${NC}"
-        echo -e "${BLUE}Attempting to install Chromium without system dependencies...${NC}"
+        echo -e "${BLUE}Dependency installation failed (common on Kali/Parrot due to package name mismatches).${NC}"
+        echo -e "${BLUE}Attempting to install dependencies manually using standard Debian names...${NC}"
+        
+        # Standard Debian/Kali/Parrot package names (without Ubuntu's t64 suffix)
+        sudo apt install -y libasound2 libatk-bridge2.0-0 libatk1.0-0 libatspi0 libcups2 libglib2.0-0 \
+                            libnss3 libnspr4 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 \
+                            libpango-1.0-0 libcairo2 libxkbcommon0
+        
+        echo -e "${BLUE}Attempting to install Chromium again...${NC}"
         "$PLAYWRIGHT_BIN" install chromium
-        echo -e "${BLUE}NOTE: If web features fail, you may need to install missing libraries manually.${NC}"
+        
+        echo -e "${BLUE}NOTE: If web features still fail, some libraries might still be missing.${NC}"
     fi
 else
     echo -e "${BLUE}Playwright binary not found in expected location. Skipping browser install.${NC}"
