@@ -24,7 +24,22 @@ pipx install git+https://github.com/mrmastrodotin/shell_gpt_s1.git --force
 
 # Install Playwright browsers
 echo -e "${GREEN}Installing Playwright browsers...${NC}"
-PLAYWRIGHT_BIN="$HOME/.local/pipx/venvs/shell-gpt/bin/playwright"
+
+# Detect pipx venv location
+PIPX_HOME_DIR=$(pipx environment --value PIPX_LOCAL_VENVS 2>/dev/null)
+if [ -z "$PIPX_HOME_DIR" ]; then
+    # Fallback to common locations
+    if [ -d "$HOME/.local/share/pipx/venvs" ]; then
+        PIPX_HOME_DIR="$HOME/.local/share/pipx/venvs"
+    elif [ -d "$HOME/.local/pipx/venvs" ]; then
+        PIPX_HOME_DIR="$HOME/.local/pipx/venvs"
+    else
+        echo -e "${BLUE}Could not determine pipx venv location.${NC}"
+        PIPX_HOME_DIR="$HOME/.local/pipx/venvs" # Default guess
+    fi
+fi
+
+PLAYWRIGHT_BIN="$PIPX_HOME_DIR/shell-gpt/bin/playwright"
 
 if [ -f "$PLAYWRIGHT_BIN" ]; then
     # Try installing with dependencies first
